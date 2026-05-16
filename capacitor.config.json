@@ -1,0 +1,13 @@
+{
+  "appId": "com.kumargauravin.balloonpop",
+  "appName": "Balloon Pop",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

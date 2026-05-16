@@ -1,0 +1,112 @@
+name: Build & Release APK
+
+on:
+  # Manual trigger from the Actions tab
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g. v1.0.0). Leave blank to auto-generate.'
+        required: false
+        default: ''
+
+  # Auto-trigger on version tags
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-apk:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to create GitHub Releases
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Java (required by Gradle) ──────────────────────────────────────────
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # ── Node ──────────────────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # ── Install Capacitor ──────────────────────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Stage web assets into www/ ─────────────────────────────────────────
+      - name: Stage web assets
+        run: npm run prepare-android
+
+      # ── Generate the Android project ──────────────────────────────────────
+      - name: Add Android platform
+        run: npx cap add android
+
+      # ── Copy web assets into Android project ──────────────────────────────
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      # ── Gradle build ──────────────────────────────────────────────────────
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # ── Rename APK with version info ──────────────────────────────────────
+      - name: Rename APK
+        id: apk
+        run: |
+          TAG="${{ github.event.inputs.release_tag }}"
+          if [ -z "$TAG" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${{ github.ref_name }}"
+          fi
+          if [ -z "$TAG" ]; then
+            TAG="build-${{ github.run_number }}"
+          fi
+          APK_NAME="balloon-pop-${TAG}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$APK_NAME"
+          echo "apk_path=$APK_NAME" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      # ── Upload APK as workflow artifact (always) ────────────────────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: balloon-pop-apk
+          path: ${{ steps.apk.outputs.apk_path }}
+          retention-days: 30
+
+      # ── Create / update GitHub Release ─────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.apk.outputs.tag }}
+          name: "Balloon Pop ${{ steps.apk.outputs.tag }}"
+          draft: false
+          prerelease: true
+          generate_release_notes: true
+          files: ${{ steps.apk.outputs.apk_path }}
+          body: |
+            ## 🎈 Balloon Pop — debug APK
+
+            Install on any Android device to test:
+            1. Download the `.apk` file below
+            2. On your Android device: **Settings → Security → Install unknown apps** (enable for your browser/Files app)
+            3. Open the downloaded APK and tap **Install**
+
+            > This is an **unsigned debug build** for testing only.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
