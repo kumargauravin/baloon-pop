@@ -1,0 +1,8 @@
+# Node
+node_modules/
+
+# Capacitor generated Android project (built fresh in CI)
+android/
+
+# Web assets staging directory (built in CI)
+www/

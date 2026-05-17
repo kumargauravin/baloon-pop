@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#87CEEB" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Balloon Pop" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>Balloon Pop 🎈</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Start Screen -->
+  <div id="start-screen" class="screen active">
+    <div class="title-balloon">🎈</div>
+    <h1>Balloon Pop!</h1>
+    <p class="subtitle">Tap the balloons before they fly away!</p>
+    <div class="mode-buttons">
+      <button class="mode-btn" data-mode="letters">🔤 Letters</button>
+      <button class="mode-btn" data-mode="numbers">🔢 Numbers</button>
+      <button class="mode-btn" data-mode="colors">🎨 Colors</button>
+      <button class="mode-btn" data-mode="free">🎉 Free Play</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen">
+    <div id="hud">
+      <div id="score-box">⭐ <span id="score">0</span></div>
+      <div id="level-box">Level <span id="level">1</span></div>
+      <div id="lives-box"><span id="lives">❤️❤️❤️</span></div>
+      <button id="pause-btn">⏸</button>
+    </div>
+    <div id="game-area"></div>
+    <div id="label-display"></div>
+  </div>
+
+  <!-- Pause Screen -->
+  <div id="pause-screen" class="screen overlay">
+    <div class="modal">
+      <h2>Paused ⏸</h2>
+      <button id="resume-btn" class="big-btn">▶ Resume</button>
+      <button id="quit-btn" class="big-btn secondary">🏠 Quit</button>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="gameover-screen" class="screen">
+    <div class="title-balloon">💥</div>
+    <h1>Game Over!</h1>
+    <p id="final-score-text">Your score: <strong id="final-score">0</strong></p>
+    <p id="high-score-text">Best: <strong id="high-score">0</strong></p>
+    <button id="play-again-btn" class="big-btn">🎈 Play Again</button>
+    <button id="home-btn" class="big-btn secondary">🏠 Home</button>
+  </div>
+
+  <canvas id="burst-canvas"></canvas>
+
+  <script src="app.js"></script>
+</body>
+</html>
